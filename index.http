@@ -1,0 +1,57 @@
+GET http://localhost:1996/
+
+###
+POST http://localhost:1996/api
+
+###
+GET http://localhost:1996/user
+
+###
+POST http://localhost:1996/user
+Content-Type: application/json
+
+{
+    "name": "Caleb",
+    "email": "caleb.parra@gmail.com"
+}
+
+###
+DELETE http://localhost:1996/user/:id
+
+###
+PATCH http://localhost:1996/user/:id
+Content-Type: application/json
+
+{
+    "name": "Caleb",
+    "email": "caleb.parra@gmail.com"
+}
+
+###
+GET http://localhost:1996/api/docs
+
+###
+GET http://localhost:1996/article
+
+###
+POST http://localhost:1996/article
+Content-Type: application/json
+
+{
+    "name": "Galaxy Tab S8",
+    "description": "Es una tableta",
+    "price": 700000
+}
+
+###
+DELETE http://localhost:1996/article/:xmxh5KoGcKDE4rXhNEw02
+
+###
+PATCH http://localhost:1996/article/:BH1DfMe1-NtCNxG6vn76k
+Content-Type: application/json
+
+{
+    "name": "Mouse logi x",
+    "description": "Es un mouse pro",
+    "price": 700000
+}
