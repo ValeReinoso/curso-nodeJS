@@ -1,60 +1,165 @@
 const { Router } = require('express')
-const { nanoid } = require('nanoid')
+const jwt = require('jsonwebtoken')
+const httpErrors = require('http-errors')
 
-const users = require('../../data/user')
+const { user: { storeUserSchema, updateUserSchema, userIdSchema, userLoginSchema } } = require('../../schemas')
+const { validatorCompiler } = require('./utils')
 const response = require('./response')
+const { UserService } = require('../../services')
 
 const UserRouter = Router()
 
 UserRouter.route('/user')
-    .get((req,res) => {
-        res.send({
-            message: users,
-            error: false
-        })
-    })
+    .get( 
+        async (req, res, next) => {
+            try{
+                const {
+                    headers: { authorization }
+                } = req
 
-    .post((req,res) => {
-        const { body: { name, email } } = req
+                if (!authorization) throw new httpErrors.Unauthorized('You are not allowed')
 
-        users.push({
-            id: nanoid(),
-            name,
-            email
-        }),
+                const [tokenType, token] = authorization.split(' ')
+            
+                if (tokenType !== 'Bearer')
+                  throw new httpErrors.Unauthorized('You are not allowed')
+            
+                const payload = jwt.verify(token, process.env.SECRET)
 
-        response({ error: false, message: users, res, status: 201 })
-    })
+                const userService = new UserService()
 
+                response({ 
+                    error: false, 
+                    message: await userService.getAllUsers(), 
+                    res, 
+                    status: 201 
+                })
+            } catch (error) {
+                next(error)
+            }
+        }
+    )
+UserRouter.route('/user/signup')
+    .post(
+        validatorCompiler(storeUserSchema, 'body'),
+        async (req, res, next) => {
+            try {
+                const {
+                    body: { name, lastName, email, password }
+                } = req
+
+                response({
+                    error: false,
+                    message: await new UserService({ 
+                        name, 
+                        lastName, 
+                        email, 
+                        password
+                    }).saveUser(),
+                    res,
+                    status: 201
+                })
+            } catch (error) {
+                next(error)
+            }
+        }
+    )
+
+UserRouter.route('/user/login')
+    .post(
+        validatorCompiler(userLoginSchema, 'body'),
+        async (req, res, next) => {
+            try {
+                const {
+                    body: { email, password }
+                } = req
+
+                const payload = { email, password }
+                const token = jwt.sign(payload, process.env.SECRET, {
+                    expiresIn: '2min'
+                })
+
+                response({
+                    error: false,
+                    message: await new UserService({
+                    email,
+                    password
+                    }).login(),
+                    res,
+                    status: 200
+                })
+            } catch (error) {
+                next(error)
+            }
+        }
+    )
+   
 UserRouter.route('/user/:id')
-    .delete((req, res) => {
-        const { params: { id } } = req
-        const userIndex = Boolean(users.findIndex(user => user.id === id))
+    .get( 
+        validatorCompiler(userIdSchema, 'params'),
+        async (req, res, next) => {
+            try {
+                const { params: { id: userId } } = req
 
-        if(userIndex === -1){
-            return response({ message: `User with id: ${id} was not found`, res, status: 404 })
+                const userService = new UserService({ userId })
+
+                response({
+                    error: false,
+                    message: await userService.getUserByID(),
+                    res,
+                    status: 200
+                })
+            } catch (error){
+                next(error)
+            }
         }
-
-        users.splice(userIndex, 1)
-        response({ error: false, message: users, res, status: 200 })
-    })
-    .patch((req, res) => {
-        const { 
-            body: { name, email },
-            params: { id } 
-        } = req
-        const userIndex = Boolean(users.findIndex(user => user.id === id))
-
-        if(userIndex === -1){
-            return response({ message: `User with id: ${id} was not found`, res, status: 404 })
+    )
+    .delete( 
+        validatorCompiler(userIdSchema, 'params'),
+        async (req, res, next) => {
+            try {
+                const {
+                  params: { id }
+                } = req
+                const userService = new UserService({ userId: id })
+          
+                response({
+                  error: false,
+                  message: await userService.removeUserByID(),
+                  res,
+                  status: 200
+                })
+              } catch (error) {
+                next(error)
+            }
         }
-
-        users.splice(userIndex, 1, {
-            ...users[userIndex],
-            ...( name && { name } ),
-            ...( email && { email } )
-        })
-        response({ error: false, message: users, res, status: 200 })
-    })
+    )
+    .patch( 
+        validatorCompiler(updateUserSchema, 'body'),
+        validatorCompiler(userIdSchema, 'params'),
+        async (req, res, next) => {
+            const {
+                body: { name, lastName, email, password },
+                params: { id: userId }
+              } = req
+        
+            try {
+                response({
+                  error: false,
+                  message: await new UserService({
+                    userId,
+                    name,
+                    lastName,
+                    email,
+                    password
+                  }).updateOneUser(),
+                  res,
+                  status: 200
+                })
+            } catch (error) {
+                next(error)
+            }
+        }
+    )
 
 module.exports = UserRouter

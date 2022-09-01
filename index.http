@@ -1,57 +1,53 @@
-GET http://localhost:1996/
+GET http://localhost:2000/
 
 ###
-POST http://localhost:1996/api
+POST http://localhost:2000/api
 
 ###
-GET http://localhost:1996/user
+GET http://localhost:2000/api/user
 
 ###
-POST http://localhost:1996/user
+GET http://localhost:2000/api/user/x
+
+###
+POST http://localhost:2000/api/user
 Content-Type: application/json
 
 {
-    "name": "Caleb",
-    "email": "caleb.parra@gmail.com"
+    "name": "Anthony",
+    "lastName": "Luzquiños",
+    "email": "v"
 }
 
 ###
-DELETE http://localhost:1996/user/:id
+DELETE http://localhost:2000/api/user/6y52rZz6Ga1tqQkORfxQi
 
 ###
-PATCH http://localhost:1996/user/:id
+PATCH http://localhost:2000/api/user/dY25pFoos25qlhPqitz47
 Content-Type: application/json
 
 {
-    "name": "Caleb",
-    "email": "caleb.parra@gmail.com"
+    "email": "c.parra@gmail.com"
 }
 
 ###
-GET http://localhost:1996/api/docs
-
-###
-GET http://localhost:1996/article
-
-###
-POST http://localhost:1996/article
+POST http://localhost:2000/api/url/
 Content-Type: application/json
 
 {
-    "name": "Galaxy Tab S8",
-    "description": "Es una tableta",
-    "price": 700000
+    "link": "https://www.google.com/"
 }
 
-###
-DELETE http://localhost:1996/article/:xmxh5KoGcKDE4rXhNEw02
+### 404 error
+GET http://localhost:2000/route/that/does/not/exists
 
 ###
-PATCH http://localhost:1996/article/:BH1DfMe1-NtCNxG6vn76k
+POST http://localhost:2000/api/user/signup
 Content-Type: application/json
 
 {
-    "name": "Mouse logi x",
-    "description": "Es un mouse pro",
-    "price": 700000
+    "name": "valentina",
+    "lastName": "reinoso",
+    "email": "valentina.reinoso.rios@gmail.com",
+    "password": "12345678"
 }
